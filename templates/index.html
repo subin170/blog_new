@@ -54,8 +54,20 @@
       {% endif %}
 
       <!-- Pager-->
-      <div class="d-flex justify-content-end mb-4">
-        <a class="btn btn-secondary text-uppercase" href="#!">Older Posts →</a>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          {% if all_posts.has_prev %}
+          <a class="btn btn-success" href="{{url_for('get_all_posts', page=all_posts.page-1)}}">New Posts ↤</a>
+          {% endif %}
+        </div>
+        <div>
+          <span>Page {{ all_posts.page }} of {{ all_posts.pages }}</span>
+        </div>
+        <div>
+          {% if all_posts.has_next %}
+          <a class="btn btn-light" href="{{url_for('get_all_posts', page=all_posts.page+1)}}">Older Posts →</a>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>

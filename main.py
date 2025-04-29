@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Flask, abort, render_template, redirect, url_for, flash, jsonify
+from flask import Flask, abort, render_template, redirect, url_for, flash, jsonify, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
@@ -185,10 +185,19 @@ def logout():
 
 @app.route('/')
 def get_all_posts():
-    print("HI alll")
-    result = db.session.execute(db.select(BlogPost))
-    posts = result.scalars().all()
+    page = request.args.get('page',1,type=int)
+    per_page = 4
+    posts = BlogPost.query.order_by(BlogPost.date.desc()).paginate(page=page, per_page=per_page)
     return render_template("index.html", all_posts=posts)
+    # offset = (page - 1) * per_page
+    # result = db.session.execute(db.select(BlogPost).order_by(BlogPost.date.desc()).limit(per_page).offset(offset))
+    # posts = result.scalars().all()
+    # Get the total number of posts to calculate the total pages
+    # total_posts = db.session.execute(db.select(db.func.count(BlogPost.id))).scalar()
+    # Calculate the total number of pages
+    # total_pages = (total_posts + per_page - 1) // per_page  # Using ceiling division
+    # Render the template and pass the posts, current page, and total pages
+    # return render_template('posts.html', posts=posts, page=page, total_pages=total_pages)
 
 
 # TODO: Allow logged-in users to comment on posts
@@ -204,6 +213,9 @@ def show_post(post_id):
             )
         db.session.add(new_comment)
         db.session.commit()
+        # Redirect after successful comment submission, else the comment you wrote 
+        # in the CKEditor field remains inside the editor after submitting (even though it's saved in the database)
+        return redirect(url_for('show_post', post_id=post_id))
     return render_template("post.html", post=requested_post, form=form)
 
 
